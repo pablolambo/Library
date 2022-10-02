@@ -3,47 +3,49 @@ package io;
 import pl.javastart.library.model.Book;
 import pl.javastart.library.model.Magazine;
 
+import java.util.InputMismatchException;
 import java.util.Scanner;
 
 public class DataReader {
     private Scanner scanner = new Scanner(System.in);
+    private ConsolePrinter consolePrinter;
 
-    public Book readAndCreateBook(){
-        System.out.println("Tytuł: ");
+    // unikam tworzenia obiektow, wiec uzywam juz istniejacego obiektu:
+
+
+    public DataReader(ConsolePrinter consolePrinter) {
+        this.consolePrinter = consolePrinter;
+    }
+
+    public Book readAndCreateBook() {
+        consolePrinter.printLine("Tytuł: ");
         String title = scanner.nextLine();
-
-        System.out.println("Autor: ");
+        consolePrinter.printLine("Autor: ");
         String author = scanner.nextLine();
-
-        System.out.println("Data wydania: ");
-        int dateRelease = scanner.nextInt();
-
-        System.out.println("Ilość stron: ");
-        int pages = scanner.nextInt();
-        scanner.nextLine();
-
-        System.out.println("Wydawnictwo: ");
+        consolePrinter.printLine("Wydawnictwo: ");
         String publisher = scanner.nextLine();
-
-        System.out.println("ISBN: ");
+        consolePrinter.printLine("ISBN: ");
         String isbn = scanner.nextLine();
+        consolePrinter.printLine("Data wydania: ");
+        int dateRelease = getInt();
+        consolePrinter.printLine("Ilość stron: ");
+        int pages = getInt();
 
-        return new Book(title,author,dateRelease,pages,publisher,isbn);
+        return new Book(title, author, dateRelease, pages, publisher, isbn);
     }
 
     public Magazine readAndCreateMagazine(){
-        System.out.println("Tytuł: ");
+        consolePrinter.printLine("Tytuł: ");
         String title = scanner.nextLine();
-        System.out.println("Wydawnictwo: ");
+        consolePrinter.printLine("Wydawnictwo: ");
         String publisher = scanner.nextLine();
-        System.out.println("Język: ");
+        consolePrinter.printLine("Język: ");
         String language = scanner.nextLine();
-
-        System.out.println("Rok wydania: ");
+        consolePrinter.printLine("Rok wydania: ");
         int year = getInt();
-        System.out.println("Miesiąc: ");
+        consolePrinter.printLine("Miesiąc: ");
         int month = getInt();
-        System.out.println("Dzień: ");
+        consolePrinter.printLine("Dzień: ");
         int day = getInt();
 
         return new Magazine(title,publisher,language,month,day,year);
@@ -54,8 +56,12 @@ public class DataReader {
     }
 
     public int getInt(){
-        int number = scanner.nextInt();
-        scanner.nextLine();
-        return number;
+        int choice = 0;
+        try{
+            choice = scanner.nextInt();
+            return choice;
+        } finally {
+            scanner.nextLine();
+        }
     }
 }

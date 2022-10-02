@@ -1,21 +1,28 @@
 package pl.javastart.library.app;
 
+import Exceptions.NoSuchOptionException;
+import io.ConsolePrinter;
 import io.DataReader;
+import jdk.internal.util.xml.impl.Input;
 import pl.javastart.library.model.Book;
 import pl.javastart.library.model.Library;
 import pl.javastart.library.model.Magazine;
 
+import java.util.InputMismatchException;
+
 public class LibraryControl {
-    private DataReader dataReader = new DataReader();
+    private ConsolePrinter consolePrinter = new ConsolePrinter();
+    private DataReader dataReader = new DataReader(consolePrinter); // zeby utworzyc obiekt z klasy DataReader to trzeba zdefiniowac ConsolePrintera. Wtedy nie musze tworzyc nowego obiektu w tej klasie zeby poslugiwac sie metoda printLine()
     private Library library = new Library();
 
 
+
     void controlLoop(){
-        Option choice;
+        Option option;
         do {
             showOptions();
-            choice = Option.createFromInt(dataReader.getInt());
-            switch (choice){
+            option = getOption();
+            switch (option){
                 case EXIT:
                     exit();
                     break;
@@ -32,60 +39,76 @@ public class LibraryControl {
                     showMagazines();
                     break;
                 case SHOW_ALL_PUBLICATIONS:
-                    library.showAllPublications();
+                    showAllPublications();
                     break;
                 default:
-                    System.out.println("Niepoprawna opcja");
+                    consolePrinter.printLine("Niepoprawna opcja");
             }
-        }while(choice != Option.EXIT);
+        }while(option != Option.EXIT);
+
+    }
+
+    private Option getOption() {
+        boolean optionOk = true;
+        Option option = null;
+
+        while(optionOk) {
+            try {
+                option = Option.createFromInt(dataReader.getInt());
+                optionOk = false;
+            } catch (NoSuchOptionException e) {
+                consolePrinter.printError(e.getMessage() + ", podaj ponownie: ");
+            } catch (InputMismatchException e) {
+                consolePrinter.printError("Wprowadzona wartość nie jest liczbą całkowitą, spróbuj ponownie.");
+            }
+        }
+        return option;
+    }
+
+    private void showOptions(){
+        consolePrinter.printLine("\nWybierz opcję: ");
+        for(Option option : Option.values()){
+            consolePrinter.printLine(option.toString());
+        }
+    }
+
+    private void addMagazine() {
+        try {
+            Magazine magazine = dataReader.readAndCreateMagazine();
+            library.addMagazine(magazine);
+        } catch (InputMismatchException e){
+            consolePrinter.printError("Nie udało się utworzyć magazynu, niepoprawne dane.");
+        } catch (ArrayIndexOutOfBoundsException e){
+            consolePrinter.printError(e.getMessage());
+        }
 
     }
 
     private void showMagazines() {
-        library.showMagazines();
+        consolePrinter.showMagazines(library.getPublications());
     }
 
-    private void addMagazine() {
-        if(library.spaceAvailable()) {
-            Magazine magazine = dataReader.readAndCreateMagazine();
-            library.addMagazine(magazine);
-        }else{
-            fullLibraryForMagazines();
-        }
-    }
-
-    private void showBooks() {
-        library.showBooks();
-    }
     private void addBook() {
-        if(library.spaceAvailable()) {
+        try {
             Book book = dataReader.readAndCreateBook();
             library.addBook(book);
-        }else{
-            fullLibraryForBooks();
+        } catch (InputMismatchException e){
+            consolePrinter.printError("Nie udało się utworzyć książki, niepoprawne dane.");
+        } catch (ArrayIndexOutOfBoundsException e){
+            consolePrinter.printError(e.getMessage());
         }
     }
-    private void fullLibraryForBooks(){
-        System.out.println("=================================");
-        System.out.println("Nie ma miejsca dla nowej książki");
-        System.out.println("=================================");
+    private void showBooks() {
+        consolePrinter.showBooks(library.getPublications());
     }
 
-    private void fullLibraryForMagazines(){
-        System.out.println("==================================");
-        System.out.println("Nie ma miejsca dla nowego magazynu");
-        System.out.println("==================================");
+    private void showAllPublications(){
+        consolePrinter.showAllPublications(library.getPublications());
     }
 
     private void exit() {
-        System.out.println("Do widzenia!");
+        consolePrinter.printLine("Do widzenia!");
         dataReader.closeApp();
     }
 
-    private void showOptions(){
-        System.out.println("\nWybierz opcję: ");
-        for(Option option : Option.values()){
-            System.out.println(option);
-        }
-    }
 }
